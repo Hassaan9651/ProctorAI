@@ -1,0 +1,13 @@
+numpy~=1.18.5
+tensorflow~=2.3.0
+opencv-python~=4.5.1.48
+matplotlib~=3.3.4
+Pillow~=8.1.0
+six~=1.15.0
+PyAudio~=0.2.11
+nltk~=3.7
+dlib~=19.24.0
+mtcnn~=0.1.0
+scikit-learn~=0.19.2
+wget~=3.2
+SpeechRecognition
