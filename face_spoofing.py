@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from sklearn.externals import joblib
+# import joblib
 from face_detector import get_face_detector, find_faces
 
 def calc_hist(img):

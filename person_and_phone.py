@@ -4,6 +4,7 @@ Created on Fri May  1 22:45:22 2020
 
 @author: hp
 """
+import sys
 
 import tensorflow as tf
 import numpy as np
@@ -317,45 +318,50 @@ def YoloV3(size=None, channels=3, anchors=yolo_anchors,
 
     return Model(inputs, outputs, name='yolov3')
 
+def bar_progress(current, total, width=80):
+  progress_message = "Downloading: %d%% [%d / %d] bytes" % (current / total * 100, current, total)
+  # Don't use print() as it will print in new line every time.
+  sys.stdout.write("\r" + progress_message)
+  sys.stdout.flush()
 def weights_download(out='models/yolov3.weights'):
-    _ = wget.download('https://pjreddie.com/media/files/yolov3.weights', out='models/yolov3.weights')
+    _ = wget.download('https://pjreddie.com/media/files/yolov3.weights', out='models/yolov3.weights', bar=bar_progress)
     
 # weights_download() # to download weights
 yolo = YoloV3()
 load_darknet_weights(yolo, 'models/yolov3.weights') 
 
-cap = cv2.VideoCapture(0)
+# cap = cv2.VideoCapture(0)
 
 
-while(True):
-    ret, image = cap.read()
-    if ret == False:
-        break
-    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    img = cv2.resize(img, (320, 320))
-    img = img.astype(np.float32)
-    img = np.expand_dims(img, 0)
-    img = img / 255
-    class_names = [c.strip() for c in open("models/classes.TXT").readlines()]
-    boxes, scores, classes, nums = yolo(img)
-    count=0
-    for i in range(nums[0]):
-        if int(classes[0][i] == 0):
-            count +=1
-        if int(classes[0][i] == 67):
-            print('Mobile Phone detected')
-    if count == 0:
-        print('No person detected')
-    elif count > 1: 
-        print('More than one person detected')
-        
-    image = draw_outputs(image, (boxes, scores, classes, nums), class_names)
-
-    cv2.imshow('Prediction', image)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-
-cap.release()
-cv2.destroyAllWindows()
+# while(True):
+#     ret, image = cap.read()
+#     if ret == False:
+#         break
+#     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+#     img = cv2.resize(img, (320, 320))
+#     img = img.astype(np.float32)
+#     img = np.expand_dims(img, 0)
+#     img = img / 255
+#     class_names = [c.strip() for c in open("models/classes.TXT").readlines()]
+#     boxes, scores, classes, nums = yolo(img)
+#     count=0
+#     for i in range(nums[0]):
+#         if int(classes[0][i] == 0):
+#             count +=1
+#         if int(classes[0][i] == 67):
+#             print('Mobile Phone detected')
+#     if count == 0:
+#         print('No person detected')
+#     elif count > 1:
+#         print('More than one person detected')
+#
+#     image = draw_outputs(image, (boxes, scores, classes, nums), class_names)
+#
+#     cv2.imshow('Prediction', image)
+#     if cv2.waitKey(1) & 0xFF == ord('q'):
+#         break
+#
+#
+# cap.release()
+# cv2.destroyAllWindows()
 
