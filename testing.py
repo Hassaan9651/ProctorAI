@@ -22,6 +22,7 @@ print("The CPU usage is : ", cpu_usage)
 #     # img_arr = np.array(bytearray(img_resp.content), dtype=np.uint8)
 #     # imgOriginalScene = cv2.imdecode(img_arr, -1)
 #     camera, frame = cap.read()
+<<<<<<< HEAD
 #     print(camera)
 #     if frame is not None:
 #         cv2.imshow("Frame", frame)
@@ -29,3 +30,12 @@ print("The CPU usage is : ", cpu_usage)
 #     if q == ord("q"):
 #         break
 # cv2.destroyAllWindows()
+=======
+#     print(camera)##
+#     if frame is not None:
+#         cv2.imshow("Frame", frame)
+#     q = cv2.waitKey(1)##
+#     if q == ord("q"):
+#         break ###
+# cv2.destroyAllWindows()##
+>>>>>>> d84242496887acb7324e9cc5f764617676965a0a

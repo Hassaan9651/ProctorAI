@@ -16,7 +16,11 @@ configFile = "models/deploy.prototxt.txt"
 net = cv2.dnn.readNetFromCaffe(configFile, modelFile)
 classifier2 = cv2.CascadeClassifier('models/haarcascade_frontalface2.xml')
 
+<<<<<<< HEAD
 cap = cv2.VideoCapture()
+=======
+cap = cv2.VideoCapture('video/occlusion.mp4')
+>>>>>>> d84242496887acb7324e9cc5f764617676965a0a
 font = cv2.FONT_HERSHEY_SIMPLEX 
 while(True):
     ret, img = cap.read()
