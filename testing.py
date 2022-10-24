@@ -25,7 +25,7 @@ print("The CPU usage is : ", cpu_usage)
 #     print(camera)
 #     if frame is not None:
 #         cv2.imshow("Frame", frame)
-#     q = cv2.waitKey(1)
+#     q = cv2.waitKey(1)##
 #     if q == ord("q"):
 #         break ##
 # cv2.destroyAllWindows()##
