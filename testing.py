@@ -28,4 +28,4 @@ print("The CPU usage is : ", cpu_usage)
 #     q = cv2.waitKey(1)
 #     if q == ord("q"):
 #         break
-# cv2.destroyAllWindows()
+# cv2.destroyAllWindows()##
