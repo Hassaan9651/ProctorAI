@@ -1,2 +1,10 @@
+/dist/
+/dist/*
+__pycache__/*.*
+/build/
 /models/yolov3.weights
-/testing.py
+testing.py
+*.spec
+merged.py
+*.mp4
+*.xls;xlsx;csv
