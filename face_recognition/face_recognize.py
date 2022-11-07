@@ -7,6 +7,8 @@ from mtcnn.mtcnn import MTCNN
 from keras_vggface.vggface import VGGFace
 from keras_vggface.utils import preprocess_input
 import face_detector as fd
+import os
+os.chdir("..")
 
 
 face_model = fd.get_face_detector()
@@ -15,7 +17,7 @@ def extract_face(filename, required_size=(224, 224)):
     # load image from file
     pixels = pyplot.imread(filename)
     # create the detector, using default weights
-    detector = MTCNN()
+    # detector = MTCNN()
     # detect faces in the image
     # results = detector.detect_faces(pixels)
     results = fd.find_faces(img=pixels, model=face_model)
@@ -43,7 +45,9 @@ def get_embeddings(filenames):
     # create a vggface model
     model = VGGFace(model='resnet50', include_top=False, input_shape=(224, 224, 3), pooling='avg')
     # perform prediction
+    t = time.time()
     yhat = model.predict(samples)
+    print("Prediction time:", time.time() - t)
     return yhat
 
 
@@ -58,7 +62,7 @@ def is_match(known_embedding, candidate_embedding, thresh=0.5):
 
 
 # define filenames
-filenames = ['h1.jpg', 'h.jpg', "k.jpg"]
+filenames = ["face_recognition/" + x for x in ['h1.jpg', 'h.jpg', "k.jpg"]]
              # 'sharon_stone3.jpg', 'channing_tatum.jpg']
 # get embeddings file filenames
 import time
@@ -71,7 +75,9 @@ sharon_id = embeddings[0]
 # verify known photos of sharon
 print(embeddings[0].shape)
 print('Positive Tests')
+t = time.time()
 is_match(embeddings[0], embeddings[1])
+print("Match Time:", time.time() - t)
 # is_match(embeddings[0], embeddings[2])
 # verify known photos of other people
 print('Negative Tests')

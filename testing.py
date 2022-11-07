@@ -55,6 +55,8 @@
 # canvas1.create_window(150, 150, window=button1)
 #
 # root.mainloop()
+import time
+
 import pyautogui
 # import cv2
 # import mediapipe as mp
@@ -114,15 +116,34 @@ import pyautogui
 #     c+=1
 
 
-from io import BytesIO
-import ffmpeg
-# data = ""
-with open('demovid.txt', 'rb') as file:
-    f = BytesIO(file.read())
-    process = (
-        ffmpeg.input('pipe:').output('test.mp4').overwrite_output().run_async(pipe_stdin=True)
-    )
-    process.communicate(input=f.getbuffer())
+# from io import BytesIO
+# import ffmpeg
+# # data = ""
+# with open('demovid.txt', 'rb') as file:
+#     f = BytesIO(file.read())
+#     process = (
+#         ffmpeg.input('pipe:').output('test.mp4').overwrite_output().run_async(pipe_stdin=True)
+#     )
+#     process.communicate(input=f.getbuffer())
 
 # print(open("test.mp4", "rb").read() == open("demovid.txt", "rb").read())
 
+
+name = "Hassaan Ahmad"
+name = list(name)
+ix = name.index(" ")
+for i in range(ix//2):
+    name[i], name[ix-1-i] = name[ix-1-i], name[i]
+j = -1
+for i in range(ix+1, (len(name)+ix+1)//2):
+    name[i], name[j] = name[j], name[i]
+    j-=1
+print("".join(name))
+
+from hand_detection import hand_detect
+import cv2
+t = time.time()
+img = cv2.imread("face_recognition/k.jpg")
+print(hand_detect(img))
+
+print(time.time()-t)

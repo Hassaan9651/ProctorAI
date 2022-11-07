@@ -15,6 +15,7 @@ import person_and_phone as pnp
 from datetime import datetime
 
 import uuid
+from hand_detection import hand_detect
 
 # import tkinter as tk
 
@@ -28,6 +29,48 @@ yolo = pnp.YoloV3()
 
 pnp.load_darknet_weights(yolo, 'models/yolov3.weights')
 class_names = [c.strip() for c in open("models/classes.TXT").readlines()]
+
+
+def onlyYolo(imgStack, file, macid, arr2, cpu_usage=0, vram=0):
+    # img1 = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # img1 = cv2.resize(img1, (320, 320))
+    # img1 = img1.astype(np.float32)
+    # img1 = np.expand_dims(img1, 0)
+    # img1 = img1 / 255
+    # class_names = [c.strip() for c in open("models/classes.TXT").readlines()]
+    t = time.time()
+    boxes, scores, classes, nums = yolo(imgStack)
+    print(boxes.shape)
+    print(time.time() - t)
+    count = 0
+    for i in range(nums[0]):
+        if int(classes[0][i] == 0):
+            count += 1
+        if int(classes[0][i] == 67):
+            msg = str(macid) + ', ' + str(datetime.now())[
+                                      :-7] + ', Object Detection, Mobile Phone detected, ' + str(
+                cpu_usage) + ', ' + str(vram) + '\n'
+            print(msg)
+            file.write(msg)
+            # print('Mobile Phone detected')
+    if count == 0:
+        print('No person detected')
+        msg = str(macid) + ', ' + str(datetime.now())[
+                                  :-7] + ', Object Detection, No person detected, ' + str(
+            cpu_usage) + ', ' + str(vram) + '\n'
+        print(msg)
+        file.write(msg)
+    elif count > 1:
+        msg = str(macid) + ', ' + str(datetime.now())[
+                                  :-7] + ', Object Detection, More than one person detected, ' + str(
+            cpu_usage) + ', ' + str(vram) + '\n'
+        print(msg)
+        file.write(msg)
+        # print('More than one person detected')
+    for i in range(len(arr2)):
+        arr2[i] = pnp.draw_outputs(arr2[i], (boxes, scores, classes, nums), class_names)
+    return arr2
+
 
 def proctor(video_path=0):
     # label1 = tk.Label(root, text='Hello World!', fg='blue', font=('helvetica', 12, 'bold'))
@@ -69,8 +112,31 @@ def proctor(video_path=0):
          [0, 0, 1]], dtype="double"
     )
 
-    thresh = img.copy()
+    file = open("Monitoring_report.csv", "w")
+    file.write("Mac Id, TimeStamp, Model Name, Event Details, CPU Usage(%), RAM(%)\n")
 
+    thresh = img.copy()
+    cc = 0
+    arr = []
+    arr2 = []
+    while True:
+        ret, img = cap.read()
+        if ret:
+            if cc % 10 == 0:
+                # print(img.shape)
+                arr2.append(img)
+                arr.append(cv2.resize(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), (320, 320)) / 255)
+
+
+        else:
+            break
+        cc += 1
+    npimg = np.array(arr)
+    arr2 = onlyYolo(npimg, file, macid, arr2)
+    # return
+
+    cap = cv2.VideoCapture(video_path)
+    # print(npimg.shape)
     while True:
         ret, img = cap.read()
         rects = fd.find_faces(img, face_model)
@@ -98,29 +164,42 @@ def proctor(video_path=0):
 
     left = [36, 37, 38, 39, 40, 41]
     right = [42, 43, 44, 45, 46, 47]
-    cv2.namedWindow('image')
+    # cv2.namedWindow('image')
     kernel = np.ones((9, 9), np.uint8)
 
     def nothing(x):
         pass
 
-    cv2.createTrackbar('threshold', 'image', 75, 255, nothing)
+    # cv2.createTrackbar('threshold', 'image', 75, 255, nothing)
 
-    file = open("Monitoring_report.csv", "w")
-    file.write("Mac Id, TimeStamp, Model Name, Event Details, CPU Usage(%), RAM(%)\n")
-
-    i = 0
-    while True:
-        valid, img = cap.read()
+    counter = 0
+    valid = True
+    # print("My length", arr2)
+    for img in arr2:
+        # while True:
+        # valid, img = cap.read()
         p1, p5, p15 = psutil.getloadavg()
+        print(counter)
+        # time.sleep(0.5)
         cpu_usage = (p1 / os.cpu_count()) * 100
         vram = psutil.virtual_memory()[2]
         if valid:
-            if i % 10 == 0:
+            if counter % 1 == 0:
+                t = time.time()
+
+                # ----------------------_Hands Detection_------------------------
+                handmsg = hand_detect(img)
+                print("hands time: ", time.time() - t)
+                if handmsg:
+                    msg = str(macid) + ', ' + str(datetime.now())[:-7] + ', Hands Detection, ' + handmsg
+                    + ', ' + str(
+                        cpu_usage) + ', ' + str(vram) + '\n'
+                    print(msg)
+                    file.write(msg)
                 # continue
                 # --------------------YOLO Section-------------------
                 # img1 = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                # img1 = cv2.resize(img, (320, 320))
+                # img1 = cv2.resize(img1, (320, 320))
                 # img1 = img1.astype(np.float32)
                 # img1 = np.expand_dims(img1, 0)
                 # img1 = img1 / 255
@@ -168,7 +247,7 @@ def proctor(video_path=0):
 
                 fd.draw_faces(img, faces)
 
-                for face in faces:
+                for face in faces[:1]:  # Only one face considered for other dependent models
                     marks = fl.detect_marks(img, landmark_model, face)
 
                     # Mouth Opening Detection -------------start-----------------
@@ -203,8 +282,8 @@ def proctor(video_path=0):
                     eyes[mask] = [255, 255, 255]
                     mid = int((marks[42][0] + marks[39][0]) // 2)
                     eyes_gray = cv2.cvtColor(eyes, cv2.COLOR_BGR2GRAY)
-                    threshold = cv2.getTrackbarPos('threshold', 'image')
-                    _, thresh = cv2.threshold(eyes_gray, threshold, 255, cv2.THRESH_BINARY)
+                    # threshold = cv2.getTrackbarPos('threshold', 'image')
+                    _, thresh = cv2.threshold(eyes_gray, 75, 255, cv2.THRESH_BINARY)
                     thresh = process_thresh(thresh)
 
                     eyeball_pos_left = contouring(thresh[:, 0:mid], mid, img, end_points_left)
@@ -298,13 +377,15 @@ def proctor(video_path=0):
                     # cv2.putText(img, str(ang1), tuple(p1), font, 2, (128, 255, 255), 3)
                     # cv2.putText(img, str(ang2), tuple(x1), font, 2, (255, 255, 128), 3)
                     # head pose estimation -------------End-----------------
-                cv2.imshow('AI Proctor', img)
-                cv2.imshow("Eye Map", thresh)
+
+                print("One Frame Time: ", time.time() - t, counter // 10)
+                # cv2.imshow('AI Proctor', img)
+                # cv2.imshow("Eye Map", thresh)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         else:
             break
-        i += 1
+        counter += 1
 
     file.close()
     cv2.destroyAllWindows()
